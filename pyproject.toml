@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vibe-coder-stack-planner"
+version = "0.1.0"
+description = "MCP server for helping vibe coders plan tech stacks through progressive elicitation"
+authors = [
+    {name = "Vibe Coder Stack Planner", email = "noreply@example.com"}
+]
+dependencies = [
+    "fastmcp>=2.0.0",
+    "pydantic>=2.0.0",
+]
+requires-python = ">=3.8"
+
+[project.scripts]
+vibe-stack-planner = "vibe_stack_planner:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vibe_stack_planner*"]
