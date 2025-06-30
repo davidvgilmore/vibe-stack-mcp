@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "vibe-stack-planner": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/davidgilmore/Workspace/vibe_coder_stack_planner",
+        "python",
+        "run_server.py"
+      ]
+    }
+  }
+}

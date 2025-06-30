@@ -42,35 +42,7 @@ class ProjectRequirements:
         if self.gathered_at == "":
             self.gathered_at = datetime.now().isoformat()
 
-# Elicitation data structures
-@dataclass
-class ProjectVisionInput:
-    """Input structure for project vision elicitation"""
-    project_vision: str
-
-@dataclass
-class UserInfoInput:
-    """Input structure for target users and interaction"""
-    target_users: str
-    user_interaction: str
-
-@dataclass
-class FeatureDataInput:
-    """Input structure for features and data needs"""
-    core_features: str
-    data_needs: str
-
-@dataclass
-class ScaleTimelineInput:
-    """Input structure for scale and timeline"""
-    user_scale: Literal["personal", "small_community", "hundreds", "thousands_plus"]
-    timeline: Literal["experimental", "few_weeks", "month_or_two", "urgent"]
-
-@dataclass
-class ResourcesInput:
-    """Input structure for budget and technical comfort"""
-    budget_level: Literal["free_only", "low_cost", "reasonable", "flexible"]
-    technical_comfort: Literal["avoid_technical", "basic_setup", "some_technical", "enjoy_technical"]
+# Using step-by-step tools instead of elicitation for now
 
 
 # Initialize the MCP server
@@ -85,166 +57,34 @@ async def start_project_planning(ctx: Context) -> str:
     """
     Start the project planning process by gathering basic information about what you want to build.
     
-    This will ask you simple questions about your idea - no technical knowledge required!
+    This will guide you through a series of questions about your project idea - no technical knowledge required!
+    Note: This version uses a guided approach since elicitation isn't available yet.
     """
-    # Create a unique session ID for this planning session
-    session_id = f"planning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    planning_sessions[session_id] = ProjectRequirements()
-    
     await ctx.info("Starting project planning process...")
     
-    # Begin elicitation flow - Step 1: Project Vision
-    result = await ctx.elicit(
-        message="""Let's start planning your project! First, tell me about your vision.
+    return """🚀 Let's plan your tech stack! I'll ask you a series of simple questions.
 
-What problem are you trying to solve, or what idea do you want to build? 
-Think about it like you're explaining to a friend - what would this thing do and why would people want to use it?""",
-        response_type=ProjectVisionInput
-    )
-    
-    if result.action == "accept":
-        planning_sessions[session_id].project_vision = result.data.project_vision
-        
-        # Continue to step 2
-        return await _ask_about_users(session_id, ctx)
-    elif result.action == "decline":
-        return "No problem! Feel free to start again when you're ready to plan your project."
-    else:
-        return "Planning cancelled. You can restart anytime with start_project_planning."
+**Step 1: Tell me about your project vision**
 
+Please describe what you want to build:
+- What problem are you trying to solve?
+- What would this app/website do?
+- Why would people want to use it?
 
-async def _ask_about_users(session_id: str, ctx: Context) -> str:
-    """Step 2: Ask about target users and how they'll interact"""
-    result = await ctx.elicit(
-        message="""Great! Now let's talk about who will use this.
+Just explain it like you're telling a friend about your idea! Once you provide this, I'll guide you through the next steps.
 
-Who do you imagine using your project? Are they:
-- People like you who have a specific problem to solve?
-- Businesses that need this functionality?
-- General consumers who would find this useful?
-- A specific community or group?
+*Example: "I want to build a simple task management app for my small team. We're always forgetting who's supposed to do what and when things are due."*
 
-Also, how do you picture them using it? Will they:
-- Visit a website and use it occasionally?
-- Use it regularly as part of their daily routine?
-- Access it on their phone while on the go?
-- Need to collaborate with others?""",
-        response_type=UserInfoInput
-    )
-    
-    if result.action == "accept":
-        planning_sessions[session_id].target_users = result.data.target_users
-        planning_sessions[session_id].user_interaction = result.data.user_interaction
-        
-        return await _ask_about_features(session_id, ctx)
-    elif result.action == "decline":
-        return "No worries! You can restart the planning process anytime."
-    else:
-        return "Planning cancelled. Feel free to start over when ready."
+After you tell me about your vision, I'll ask you about:
+- Who will use it and how
+- What features you need
+- How many users you expect
+- Your budget and technical comfort level
+
+Then I'll recommend the perfect tech stack for your needs!"""
 
 
-async def _ask_about_features(session_id: str, ctx: Context) -> str:
-    """Step 3: Ask about core features and data needs"""
-    result = await ctx.elicit(
-        message="""Perfect! Now let's think about what your project actually needs to do.
-
-What are the main things people will do with your project? For example:
-- Will they create accounts and log in?
-- Do they need to store or upload information?
-- Will they search for things or browse content?
-- Do they need to communicate with others?
-- Will there be payments or transactions?
-- Does it need to send notifications or emails?
-
-Also, what kind of information will your project work with?
-- User profiles and preferences?
-- Documents, images, or files?
-- Data from other websites or services?
-- Real-time information that changes frequently?""",
-        response_type=FeatureDataInput
-    )
-    
-    if result.action == "accept":
-        # Parse core features into a list
-        features_text = result.data.core_features
-        planning_sessions[session_id].core_features = [f.strip() for f in features_text.split(',') if f.strip()]
-        planning_sessions[session_id].data_needs = result.data.data_needs
-        
-        return await _ask_about_scale(session_id, ctx)
-    elif result.action == "decline":
-        return "No problem! You can restart the planning process anytime."
-    else:
-        return "Planning cancelled. Feel free to start over when ready."
-
-
-async def _ask_about_scale(session_id: str, ctx: Context) -> str:
-    """Step 4: Ask about expected scale and timeline"""
-    result = await ctx.elicit(
-        message="""Great! Let's talk about your expectations for growth and timing.
-
-How many people do you think might use this?
-When do you want to have something working?""",
-        response_type=ScaleTimelineInput
-    )
-    
-    if result.action == "accept":
-        planning_sessions[session_id].user_scale = result.data.user_scale
-        planning_sessions[session_id].timeline = result.data.timeline
-        
-        return await _ask_about_resources(session_id, ctx)
-    elif result.action == "decline":
-        return "No problem! You can restart the planning process anytime."
-    else:
-        return "Planning cancelled. Feel free to start over when ready."
-
-
-async def _ask_about_resources(session_id: str, ctx: Context) -> str:
-    """Step 5: Ask about budget and technical comfort level"""
-    result = await ctx.elicit(
-        message="""Almost done! Last questions about resources and comfort level.
-
-What's your budget situation for this project?
-How comfortable are you with technical stuff?""",
-        response_type=ResourcesInput
-    )
-    
-    if result.action == "accept":
-        planning_sessions[session_id].budget_level = result.data.budget_level
-        planning_sessions[session_id].technical_comfort = result.data.technical_comfort
-        
-        # Generate recommendations
-        return await _generate_recommendations(session_id, ctx)
-    elif result.action == "decline":
-        return "No problem! You can restart the planning process anytime."
-    else:
-        return "Planning cancelled. Feel free to start over when ready."
-
-
-async def _generate_recommendations(session_id: str, ctx: Context) -> str:
-    """Generate final tech stack recommendations based on gathered requirements"""
-    requirements = planning_sessions.get(session_id)
-    if not requirements:
-        return "Error: Planning session not found. Please start over."
-    
-    await ctx.info("Analyzing your requirements and generating recommendations...")
-    
-    # This is where we'd call the recommendation engine
-    recommendations = await _analyze_requirements(requirements)
-    
-    return f"""🎉 Perfect! Based on what you've told me, here's my recommendation:
-
-**Recommended Tech Stack:**
-{recommendations['stack_summary']}
-
-**Why this works for you:**
-{recommendations['reasoning']}
-
-**Estimated monthly cost:** {recommendations['cost_estimate']}
-**Setup complexity:** {recommendations['complexity_level']}
-
-Use the `get_deployment_guide` tool to get step-by-step instructions for setting this up!
-
-You can also use `explain_recommendation` if you want more details about why I suggested this approach."""
+# Helper functions removed - using step-by-step tools instead of elicitation
 
 
 async def _analyze_requirements(requirements: ProjectRequirements) -> Dict[str, str]:
@@ -335,6 +175,222 @@ async def _analyze_requirements(requirements: ProjectRequirements) -> Dict[str, 
         recommendations["complexity_level"] = "Medium - some coding required but well-supported"
     
     return recommendations
+
+
+@mcp.tool()
+async def collect_project_vision(ctx: Context, project_vision: str) -> str:
+    """
+    Collect your project vision and move to the next step of planning.
+    
+    Args:
+        project_vision: Describe what you want to build and what problem it solves
+    """
+    # Create a new session
+    session_id = f"planning_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    planning_sessions[session_id] = ProjectRequirements()
+    planning_sessions[session_id].project_vision = project_vision
+    
+    await ctx.info(f"Recorded project vision for session {session_id}")
+    
+    return f"""Great! I understand you want to build: "{project_vision}"
+
+**Step 2: Tell me about your users and how they'll interact**
+
+Please tell me:
+- **Who will use this?** (e.g., "My team of 8 people", "Small business owners", "Anyone who needs to track tasks")
+- **How will they use it?** (e.g., "Check it daily", "Use occasionally", "On mobile while traveling")
+
+Use the `collect_user_info` tool with this information to continue!"""
+
+
+@mcp.tool()
+async def collect_user_info(ctx: Context, target_users: str, user_interaction: str, session_id: Optional[str] = None) -> str:
+    """
+    Collect information about who will use your project and how.
+    
+    Args:
+        target_users: Describe who will use your project
+        user_interaction: Describe how often and in what context people will use this
+        session_id: Optional session ID (will use most recent if not provided)
+    """
+    if not session_id:
+        if not planning_sessions:
+            return "No active planning session. Please start with `start_project_planning` first."
+        session_id = max(planning_sessions.keys())
+    
+    if session_id not in planning_sessions:
+        return f"Session {session_id} not found. Please start a new planning session."
+    
+    planning_sessions[session_id].target_users = target_users
+    planning_sessions[session_id].user_interaction = user_interaction
+    
+    await ctx.info(f"Updated user info for session {session_id}")
+    
+    return f"""Perfect! So your users are: "{target_users}" and they'll use it: "{user_interaction}"
+
+**Step 3: Features and data needs**
+
+Please tell me:
+- **What will people do with it?** (e.g., "Create tasks, assign to people, mark complete, see progress")
+- **What information will it handle?** (e.g., "Task details, user profiles, due dates, completion status")
+
+Use the `collect_features_data` tool to continue!"""
+
+
+@mcp.tool()
+async def collect_features_data(ctx: Context, core_features: str, data_needs: str, session_id: Optional[str] = None) -> str:
+    """
+    Collect information about features and data requirements.
+    
+    Args:
+        core_features: Describe the main features or actions users will take
+        data_needs: Describe what kind of data or information your project will work with
+        session_id: Optional session ID (will use most recent if not provided)
+    """
+    if not session_id:
+        if not planning_sessions:
+            return "No active planning session. Please start with `start_project_planning` first."
+        session_id = max(planning_sessions.keys())
+    
+    if session_id not in planning_sessions:
+        return f"Session {session_id} not found. Please start a new planning session."
+    
+    # Parse core features into a list
+    planning_sessions[session_id].core_features = [f.strip() for f in core_features.split(',') if f.strip()]
+    planning_sessions[session_id].data_needs = data_needs
+    
+    await ctx.info(f"Updated features and data info for session {session_id}")
+    
+    return f"""Excellent! Features: "{core_features}" and data needs: "{data_needs}"
+
+**Step 4: Scale and timeline expectations**
+
+Please tell me:
+- **How many users do you expect?** Choose one:
+  - "personal" (just me and a few others)
+  - "small_community" (dozens of people)
+  - "hundreds" (potentially hundreds of users)
+  - "thousands_plus" (could grow to thousands or more)
+
+- **When do you need this?** Choose one:
+  - "experimental" (just experimenting, no rush)
+  - "few_weeks" (within a few weeks for a basic version)
+  - "month_or_two" (need something in a month or two)
+  - "urgent" (this is urgent, need it ASAP)
+
+Use the `collect_scale_timeline` tool to continue!"""
+
+
+@mcp.tool()
+async def collect_scale_timeline(ctx: Context, user_scale: str, timeline: str, session_id: Optional[str] = None) -> str:
+    """
+    Collect information about expected scale and timeline.
+    
+    Args:
+        user_scale: Expected number of users (personal, small_community, hundreds, thousands_plus)
+        timeline: When you need this (experimental, few_weeks, month_or_two, urgent)
+        session_id: Optional session ID (will use most recent if not provided)
+    """
+    if not session_id:
+        if not planning_sessions:
+            return "No active planning session. Please start with `start_project_planning` first."
+        session_id = max(planning_sessions.keys())
+    
+    if session_id not in planning_sessions:
+        return f"Session {session_id} not found. Please start a new planning session."
+    
+    # Validate inputs
+    valid_scales = ["personal", "small_community", "hundreds", "thousands_plus"]
+    valid_timelines = ["experimental", "few_weeks", "month_or_two", "urgent"]
+    
+    if user_scale not in valid_scales:
+        return f"Invalid user_scale. Please choose one of: {', '.join(valid_scales)}"
+    
+    if timeline not in valid_timelines:
+        return f"Invalid timeline. Please choose one of: {', '.join(valid_timelines)}"
+    
+    planning_sessions[session_id].user_scale = user_scale
+    planning_sessions[session_id].timeline = timeline
+    
+    await ctx.info(f"Updated scale and timeline for session {session_id}")
+    
+    return f"""Great! Scale: "{user_scale}" and timeline: "{timeline}"
+
+**Step 5: Budget and technical comfort (final step!)**
+
+Please tell me:
+- **Budget level?** Choose one:
+  - "free_only" (free or very low cost only)
+  - "low_cost" (can spend a little bit ~$10-50/month)
+  - "reasonable" (reasonable budget for a good solution ~$50-200/month)
+  - "flexible" (budget is not a major constraint)
+
+- **Technical comfort?** Choose one:
+  - "avoid_technical" (I avoid technical things when possible)
+  - "basic_setup" (I can handle basic setup with good instructions)
+  - "some_technical" (I'm comfortable with some technical work)
+  - "enjoy_technical" (I enjoy diving into technical details)
+
+Use the `finalize_planning` tool to get your recommendations!"""
+
+
+@mcp.tool()
+async def finalize_planning(ctx: Context, budget_level: str, technical_comfort: str, session_id: Optional[str] = None) -> str:
+    """
+    Finalize the planning process and get tech stack recommendations.
+    
+    Args:
+        budget_level: Budget level (free_only, low_cost, reasonable, flexible)
+        technical_comfort: Technical comfort level (avoid_technical, basic_setup, some_technical, enjoy_technical)
+        session_id: Optional session ID (will use most recent if not provided)
+    """
+    if not session_id:
+        if not planning_sessions:
+            return "No active planning session. Please start with `start_project_planning` first."
+        session_id = max(planning_sessions.keys())
+    
+    if session_id not in planning_sessions:
+        return f"Session {session_id} not found. Please start a new planning session."
+    
+    # Validate inputs
+    valid_budgets = ["free_only", "low_cost", "reasonable", "flexible"]
+    valid_comfort = ["avoid_technical", "basic_setup", "some_technical", "enjoy_technical"]
+    
+    if budget_level not in valid_budgets:
+        return f"Invalid budget_level. Please choose one of: {', '.join(valid_budgets)}"
+    
+    if technical_comfort not in valid_comfort:
+        return f"Invalid technical_comfort. Please choose one of: {', '.join(valid_comfort)}"
+    
+    planning_sessions[session_id].budget_level = budget_level
+    planning_sessions[session_id].technical_comfort = technical_comfort
+    
+    await ctx.info(f"Finalizing recommendations for session {session_id}")
+    
+    # Generate recommendations
+    requirements = planning_sessions[session_id]
+    recommendations = await _analyze_requirements(requirements)
+    
+    return f"""🎉 Perfect! Based on everything you've told me, here's my recommendation:
+
+**Your Project Summary:**
+- Vision: {requirements.project_vision}
+- Users: {requirements.target_users}
+- Scale: {requirements.user_scale} users, {requirements.timeline} timeline
+- Budget: {requirements.budget_level}, Technical comfort: {requirements.technical_comfort}
+
+**Recommended Tech Stack:**
+{recommendations['stack_summary']}
+
+**Why this works for you:**
+{recommendations['reasoning']}
+
+**Estimated monthly cost:** {recommendations['cost_estimate']}
+**Setup complexity:** {recommendations['complexity_level']}
+
+Use the `get_deployment_guide` tool to get step-by-step instructions for setting this up!
+
+You can also use `explain_recommendation` if you want more details about why I suggested this approach."""
 
 
 @mcp.tool()

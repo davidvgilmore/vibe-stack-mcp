@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+vibe_coder_stack_planner.egg-info/PKG-INFO
+vibe_coder_stack_planner.egg-info/SOURCES.txt
+vibe_coder_stack_planner.egg-info/dependency_links.txt
+vibe_coder_stack_planner.egg-info/entry_points.txt
+vibe_coder_stack_planner.egg-info/requires.txt
+vibe_coder_stack_planner.egg-info/top_level.txt
