@@ -1,10 +1,12 @@
-# Vibe Coder Stack Planner 🚀
+# Vibe Stack MCP 🚀
 
-A Model Context Protocol (MCP) server that helps non-technical builders ("vibe coders") plan the right tech stack for their ideas through progressive questioning using the MCP elicitation specification.
+A Model Context Protocol (MCP) server that helps VibeCoder developers choose the perfect tech stack for their projects through progressive questioning and personalized recommendations.
+
+Perfect for rapid prototyping and getting tech stack recommendations based on your project requirements, budget, timeline, and technical comfort level.
 
 ## What it does
 
-This MCP server helps people who have great ideas but don't know the technical jargon. Instead of asking "Do you need a REST API with PostgreSQL?" it asks "What kind of information will people store in your app?"
+This MCP server helps developers quickly choose optimal technology stacks without getting bogged down in technical analysis paralysis. Instead of researching dozens of frameworks, it asks smart questions about your project and gives you the modern, battle-tested stack that fits your needs.
 
 ### Key Features
 
