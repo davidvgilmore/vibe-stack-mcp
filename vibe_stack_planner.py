@@ -3,13 +3,21 @@
 Vibe Coder Stack Planner MCP Server
 
 A Model Context Protocol server that helps non-technical builders ("vibe coders") 
-plan the right tech stack for their ideas through progressive questioning using 
-the MCP elicitation spec.
+plan the right tech stack for their ideas through progressive questioning.
 
-This server focuses on:
+This server follows Vibe Coder Best Practices (2025):
+- Web-first approach: 90% of projects work great as web apps (mobile browsers work excellently)
+- Modern serverless architecture: Next.js + Neon/Supabase + Vercel
+- Start small, scale up: Always assume starting with small user base initially
+- Platform-as-a-Service focus: Avoid complex infrastructure setup
+- AI-friendly tooling: Technologies with excellent AI assistant support
+
+Key Principles:
 - Simple, jargon-free questions
-- Platform-as-a-Service recommendations
+- Interactive process (user must provide answers, agent presents questions)
 - Practical deployment guidance
+- Cost-effective recommendations with generous free tiers
+- Modern 2025 tech stack (includes newer features like Neon Auth beta)
 """
 
 import json
@@ -64,6 +72,8 @@ async def start_project_planning(ctx: Context) -> str:
     
     return """🚀 Let's plan your tech stack! I'll ask you a series of simple questions.
 
+**IMPORTANT**: This is an interactive process. I will ask you questions and YOU need to provide the answers. Do not answer the questions yourself - wait for the user to respond to each step.
+
 **Step 1: Tell me about your project vision**
 
 Please describe what you want to build:
@@ -77,9 +87,9 @@ Just explain it like you're telling a friend about your idea! Once you provide t
 
 After you tell me about your vision, I'll ask you about:
 - Who will use it and how
-- What features you need
-- How many users you expect
-- Your budget and technical comfort level
+- What features you need  
+- Your timeline and budget
+- Your technical comfort level
 
 Then I'll recommend the perfect tech stack for your needs!"""
 
@@ -88,10 +98,13 @@ Then I'll recommend the perfect tech stack for your needs!"""
 
 
 async def _analyze_requirements(requirements: ProjectRequirements) -> Dict[str, str]:
-    """Analyze requirements and generate recommendations using system prompt"""
-    
-    # This is our recommendation engine - could be enhanced with LLM calls
-    # For now, using rule-based logic
+    """
+    Analyze requirements and generate recommendations following Vibe Coder best practices:
+    - Web-first approach (mobile browsers work great)
+    - Modern PaaS platforms with generous free tiers
+    - Serverless-first architecture
+    - Focus on speed to value
+    """
     
     recommendations = {
         "stack_summary": "",
@@ -102,77 +115,75 @@ async def _analyze_requirements(requirements: ProjectRequirements) -> Dict[str, 
     
     # Analyze data needs and features to determine architecture
     needs_database = any(keyword in requirements.data_needs.lower() + ' '.join(requirements.core_features).lower() 
-                        for keyword in ['store', 'save', 'profile', 'user', 'account', 'data'])
+                        for keyword in ['store', 'save', 'profile', 'user', 'account', 'data', 'records'])
     
     needs_auth = any(keyword in ' '.join(requirements.core_features).lower() 
-                    for keyword in ['login', 'account', 'user', 'profile'])
+                    for keyword in ['login', 'account', 'user', 'profile', 'auth', 'signup'])
     
     needs_real_time = any(keyword in requirements.data_needs.lower() + ' '.join(requirements.core_features).lower()
-                         for keyword in ['chat', 'message', 'notification', 'real-time', 'live'])
+                         for keyword in ['chat', 'message', 'notification', 'real-time', 'live', 'collaborative'])
+
+    # VIBE CODER PRINCIPLE: Web apps work everywhere
+    # 90% of projects don't need native mobile apps - modern web apps work great on mobile browsers
+    frontend_rec = "Next.js 15 with App Router"
     
-    # Determine frontend approach
-    if requirements.user_interaction.lower().find('phone') != -1 or requirements.user_interaction.lower().find('mobile') != -1:
-        frontend_rec = "React Native with Expo (works on both iPhone and Android)"
-    else:
-        frontend_rec = "Next.js (React framework) for a modern web app"
-    
-    # Determine backend and database
-    if requirements.technical_comfort in ['avoid_technical', 'basic_setup']:
-        if needs_database:
-            backend_rec = "Supabase (handles database, auth, and API automatically)"
+    # Determine backend and database based on 2025 best practices
+    if needs_database and needs_auth:
+        # Use modern serverless Postgres with built-in auth
+        if requirements.technical_comfort in ['avoid_technical', 'basic_setup']:
+            backend_rec = "Next.js API routes with Supabase (includes auth + database)"
         else:
-            backend_rec = "Vercel Functions (serverless, no server management)"
+            backend_rec = "Next.js API routes with Neon (serverless Postgres) + Clerk auth"
+    elif needs_database:
+        # Database but no auth
+        backend_rec = "Next.js API routes with Neon (serverless Postgres)"
+    elif needs_auth:
+        # Auth but no persistent database  
+        backend_rec = "Next.js API routes with Clerk auth"
     else:
-        if needs_database:
-            backend_rec = "Next.js API routes with PlanetScale MySQL database"
-        else:
-            backend_rec = "Vercel or Netlify Functions"
+        # Static or minimal backend needs
+        backend_rec = "Next.js API routes (for any server functionality)"
     
-    # Determine hosting
-    if requirements.budget_level == 'free_only':
-        hosting_rec = "Vercel (free tier covers most small projects)"
-    elif requirements.budget_level == 'low_cost':
-        hosting_rec = "Vercel Pro or Netlify Pro ($20/month)"
-    else:
-        hosting_rec = "Vercel Pro with premium add-ons as needed"
+    # Always recommend Vercel for Next.js (made by same team)
+    hosting_rec = "Vercel"
     
-    # Build recommendation
+    # Build recommendation using 2025 Vibe Coder Stack
     recommendations["stack_summary"] = f"""
 • Frontend: {frontend_rec}
-• Backend: {backend_rec}
+• Backend: {backend_rec} 
+• Styling: Tailwind CSS + shadcn/ui components
 • Hosting: {hosting_rec}
-• Domain: Namecheap or Google Domains (~$12/year)
+• Domain: Namecheap (~$12/year)
 """
     
-    # Build reasoning
-    reasoning_parts = []
+    # Build reasoning based on vibe coder principles
+    reasoning_parts = [
+        "This is the proven 2025 'Vibe Stack' - optimized for speed and simplicity"
+    ]
+    
     if requirements.technical_comfort in ['avoid_technical', 'basic_setup']:
-        reasoning_parts.append("I chose beginner-friendly tools that handle most technical details automatically")
+        reasoning_parts.append("These tools have excellent documentation and AI assistant support")
     
-    if requirements.timeline in ['urgent', 'few_weeks']:
-        reasoning_parts.append("These tools let you build and deploy quickly")
-    
-    if requirements.budget_level == 'free_only':
-        reasoning_parts.append("This stack has generous free tiers to keep costs minimal")
-    
-    if requirements.user_scale in ['thousands_plus', 'hundreds']:
-        reasoning_parts.append("These platforms scale automatically as you grow")
+    reasoning_parts.append("Everything scales automatically as you grow")
+    reasoning_parts.append("Web app works perfectly on desktop and mobile browsers")
     
     recommendations["reasoning"] = ". ".join(reasoning_parts) + "."
     
-    # Cost estimate
+    # Cost estimate based on realistic 2025 pricing
     if requirements.budget_level == 'free_only':
-        recommendations["cost_estimate"] = "$0-15/month (domain + potential overages)"
+        recommendations["cost_estimate"] = "$0-20/month (generous free tiers + domain)"
     elif requirements.budget_level == 'low_cost':
-        recommendations["cost_estimate"] = "$20-40/month"
+        recommendations["cost_estimate"] = "$20-50/month"
     else:
         recommendations["cost_estimate"] = "$50-150/month with room to scale"
     
-    # Complexity
+    # Complexity assessment
     if requirements.technical_comfort in ['avoid_technical', 'basic_setup']:
-        recommendations["complexity_level"] = "Low - mostly drag-and-drop with good documentation"
+        recommendations["complexity_level"] = "Low - guided setup with excellent AI coding assistant support"
+    elif requirements.technical_comfort == 'some_technical':
+        recommendations["complexity_level"] = "Medium - straightforward setup, some coding required"
     else:
-        recommendations["complexity_level"] = "Medium - some coding required but well-supported"
+        recommendations["complexity_level"] = "Medium - full control with modern tooling"
     
     return recommendations
 
@@ -263,22 +274,28 @@ async def collect_features_data(ctx: Context, core_features: str, data_needs: st
     
     return f"""Excellent! Features: "{core_features}" and data needs: "{data_needs}"
 
-**Step 4: Scale and timeline expectations**
+**Step 4: Timeline and budget (final step!)**
 
 Please tell me:
-- **How many users do you expect?** Choose one:
-  - "personal" (just me and a few others)
-  - "small_community" (dozens of people)
-  - "hundreds" (potentially hundreds of users)
-  - "thousands_plus" (could grow to thousands or more)
-
 - **When do you need this?** Choose one:
   - "experimental" (just experimenting, no rush)
-  - "few_weeks" (within a few weeks for a basic version)
+  - "few_weeks" (within a few weeks for a basic version)  
   - "month_or_two" (need something in a month or two)
   - "urgent" (this is urgent, need it ASAP)
 
-Use the `collect_scale_timeline` tool to continue!"""
+- **Budget level?** Choose one:
+  - "free_only" (free or very low cost only)
+  - "low_cost" (can spend a little bit ~$10-50/month)
+  - "reasonable" (reasonable budget for a good solution ~$50-200/month)
+  - "flexible" (budget is not a major constraint)
+
+- **Technical comfort?** Choose one:
+  - "avoid_technical" (I avoid technical things when possible)
+  - "basic_setup" (I can handle basic setup with good instructions)
+  - "some_technical" (I'm comfortable with some technical work)
+  - "enjoy_technical" (I enjoy diving into technical details)
+
+Use the `finalize_planning` tool to get your recommendations!"""
 
 
 @mcp.tool()
@@ -309,12 +326,13 @@ async def collect_scale_timeline(ctx: Context, user_scale: str, timeline: str, s
     if timeline not in valid_timelines:
         return f"Invalid timeline. Please choose one of: {', '.join(valid_timelines)}"
     
-    planning_sessions[session_id].user_scale = user_scale
+    # Set defaults for vibe coder principles (assume starting small)
+    planning_sessions[session_id].user_scale = "small_start"  # Always assume starting small
     planning_sessions[session_id].timeline = timeline
     
-    await ctx.info(f"Updated scale and timeline for session {session_id}")
+    await ctx.info(f"Updated timeline for session {session_id} (assuming small start per vibe coder principles)")
     
-    return f"""Great! Scale: "{user_scale}" and timeline: "{timeline}"
+    return f"""Great! Timeline: "{timeline}"
 
 **Step 5: Budget and technical comfort (final step!)**
 
@@ -335,11 +353,12 @@ Use the `finalize_planning` tool to get your recommendations!"""
 
 
 @mcp.tool()
-async def finalize_planning(ctx: Context, budget_level: str, technical_comfort: str, session_id: Optional[str] = None) -> str:
+async def finalize_planning(ctx: Context, timeline: str, budget_level: str, technical_comfort: str, session_id: Optional[str] = None) -> str:
     """
     Finalize the planning process and get tech stack recommendations.
     
     Args:
+        timeline: When you need this (experimental, few_weeks, month_or_two, urgent)
         budget_level: Budget level (free_only, low_cost, reasonable, flexible)
         technical_comfort: Technical comfort level (avoid_technical, basic_setup, some_technical, enjoy_technical)
         session_id: Optional session ID (will use most recent if not provided)
@@ -353,8 +372,12 @@ async def finalize_planning(ctx: Context, budget_level: str, technical_comfort: 
         return f"Session {session_id} not found. Please start a new planning session."
     
     # Validate inputs
+    valid_timelines = ["experimental", "few_weeks", "month_or_two", "urgent"]
     valid_budgets = ["free_only", "low_cost", "reasonable", "flexible"]
     valid_comfort = ["avoid_technical", "basic_setup", "some_technical", "enjoy_technical"]
+    
+    if timeline not in valid_timelines:
+        return f"Invalid timeline. Please choose one of: {', '.join(valid_timelines)}"
     
     if budget_level not in valid_budgets:
         return f"Invalid budget_level. Please choose one of: {', '.join(valid_budgets)}"
@@ -362,8 +385,11 @@ async def finalize_planning(ctx: Context, budget_level: str, technical_comfort: 
     if technical_comfort not in valid_comfort:
         return f"Invalid technical_comfort. Please choose one of: {', '.join(valid_comfort)}"
     
+    planning_sessions[session_id].timeline = timeline
     planning_sessions[session_id].budget_level = budget_level
     planning_sessions[session_id].technical_comfort = technical_comfort
+    # Always assume starting small (vibe coder principle)
+    planning_sessions[session_id].user_scale = "small_start"
     
     await ctx.info(f"Finalizing recommendations for session {session_id}")
     
@@ -376,8 +402,9 @@ async def finalize_planning(ctx: Context, budget_level: str, technical_comfort: 
 **Your Project Summary:**
 - Vision: {requirements.project_vision}
 - Users: {requirements.target_users}
-- Scale: {requirements.user_scale} users, {requirements.timeline} timeline
+- Timeline: {requirements.timeline}
 - Budget: {requirements.budget_level}, Technical comfort: {requirements.technical_comfort}
+- Approach: Starting small and scaling up (vibe coder best practice)
 
 **Recommended Tech Stack:**
 {recommendations['stack_summary']}
@@ -567,7 +594,19 @@ Based on your requirements, here's your step-by-step deployment plan:
     
     # Add specific features based on their requirements
     if any('auth' in feature.lower() or 'login' in feature.lower() for feature in requirements.core_features):
-        guide += """
+        if 'neon' in guide.lower():
+            guide += """
+3. **Add user authentication with Neon Auth (beta):**
+   ```bash
+   npm install @neondatabase/serverless @auth/core
+   ```
+   - Sign up at neon.tech (generous free tier)
+   - Enable Neon Auth in beta features
+   - Built-in authentication with your database
+   - OR use Clerk for more features: npm install @clerk/nextjs
+"""
+        else:
+            guide += """
 3. **Add user authentication:**
    ```bash
    npm install @supabase/supabase-js
@@ -581,9 +620,10 @@ Based on your requirements, here's your step-by-step deployment plan:
     if any('database' in req.lower() or 'store' in req.lower() for req in [requirements.data_needs]):
         guide += """
 4. **Set up database:**
-   - Supabase automatically provides PostgreSQL database
-   - Use their visual table editor to create your data structure
-   - No SQL knowledge required!
+   - Modern serverless PostgreSQL with automatic scaling
+   - Use visual table editor to create your data structure
+   - No SQL knowledge required to get started!
+   - Branching and point-in-time recovery included
 """
     
     guide += f"""

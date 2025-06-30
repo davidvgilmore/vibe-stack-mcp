@@ -1,5 +1,9 @@
 # Usage Examples for Vibe Coder Stack Planner
 
+## Key Principle: Interactive Process
+
+**IMPORTANT**: This MCP server requires user interaction. The agent should present questions from the server to the user and wait for the user's responses. The agent should NOT answer the questions itself.
+
 ## Example Conversation Flow
 
 Here's how a typical interaction with the MCP server would look:
@@ -75,16 +79,17 @@ User:
 Server: 🎉 Perfect! Based on what you've told me, here's my recommendation:
 
 **Recommended Tech Stack:**
-• Frontend: Next.js (React framework) for a modern web app
-• Backend: Supabase (handles database, auth, and API automatically)
-• Hosting: Vercel (free tier covers most small projects)
-• Domain: Namecheap or Google Domains (~$12/year)
+• Frontend: Next.js 15 with App Router
+• Backend: Next.js API routes with Neon (serverless Postgres) + Clerk auth
+• Styling: Tailwind CSS + shadcn/ui components
+• Hosting: Vercel
+• Domain: Namecheap (~$12/year)
 
 **Why this works for you:**
-I chose beginner-friendly tools that handle most technical details automatically. These tools let you build and deploy quickly. This stack has generous free tiers to keep costs minimal.
+This is the proven 2025 'Vibe Stack' - optimized for speed and simplicity. These tools have excellent documentation and AI assistant support. Everything scales automatically as you grow. Web app works perfectly on desktop and mobile browsers.
 
-**Estimated monthly cost:** $20-40/month
-**Setup complexity:** Low - mostly drag-and-drop with good documentation
+**Estimated monthly cost:** $20-50/month
+**Setup complexity:** Low - guided setup with excellent AI coding assistant support
 
 Use the `get_deployment_guide` tool to get step-by-step instructions for setting this up!
 ```
